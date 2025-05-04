@@ -1,7 +1,7 @@
 {
-  "name": "@furkanogutcu/nest-replace-me",
+  "name": "@furkanogutcu/nest-cache",
   "version": "0.0.1",
-  "description": "",
+  "description": "Redis-based caching module for NestJS applications.",
   "author": "Furkan Ogutcu",
   "license": "MIT",
   "readme": "README.md",
@@ -31,19 +31,21 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "keywords": [
-    "nestjs"
+    "nestjs",
+    "cache",
+    "redis"
   ],
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/furkanogutcu/nest-replace-me.git"
+    "url": "git+https://github.com/furkanogutcu/nest-cache.git"
   },
   "bugs": {
-    "url": "https://github.com/furkanogutcu/nest-replace-me/issues"
+    "url": "https://github.com/furkanogutcu/nest-cache/issues"
   },
-  "homepage": "https://github.com/furkanogutcu/nest-replace-me#readme",
+  "homepage": "https://github.com/furkanogutcu/nest-cache#readme",
   "peerDependencies": {
     "@nestjs/common": "^11.1.0",
     "@nestjs/core": "^11.1.0",
