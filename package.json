@@ -52,7 +52,7 @@
     "@nestjs/testing": "11.1.0",
     "@nestjs/platform-express": "^11.1.0",
     "@furkanogutcu/nest-redis": "^1.0.2",
-    "@furkanogutcu/nest-sensitive": "^1.0.0"
+    "@furkanogutcu/nest-sensitive": "^1.0.1"
   },
   "dependencies": {},
   "devDependencies": {
