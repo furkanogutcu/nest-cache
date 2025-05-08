@@ -1,147 +1,123 @@
-import { RedisModule, RedisService } from '@furkanogutcu/nest-redis';
-import { SensitiveModule, SensitiveService } from '@furkanogutcu/nest-sensitive';
+import { RedisService } from '@furkanogutcu/nest-redis';
+import { SensitiveService } from '@furkanogutcu/nest-sensitive';
 import { DynamicModule, Module, Provider } from '@nestjs/common';
 
 import { CacheService } from './cache.service';
-import { CacheKey } from './cache-key';
-import { CACHE_MODULE_OPTIONS, REDIS_SERVICE, SENSITIVE_SERVICE } from './constants/cache.constants';
+import { CACHE_MODULE_OPTIONS } from './constants/cache.constants';
 import { CacheModuleAsyncOptions, CacheModuleOptions } from './interfaces/cache-module-options.interface';
 
 @Module({})
 export class CacheModule {
-  static register(options: CacheModuleOptions): DynamicModule {
-    if (options.cacheKeyConfig) {
-      CacheKey.configure(options.cacheKeyConfig);
-    }
+  static register(options: CacheModuleOptions = {}): DynamicModule {
+    const providers: Provider[] = [];
 
-    const imports = [];
-    const providers: Provider[] = [
-      {
-        provide: CACHE_MODULE_OPTIONS,
-        useValue: options,
-      },
-    ];
-
-    if (options.sensitive instanceof SensitiveService) {
+    if (options.redisService) {
       providers.push({
-        provide: SENSITIVE_SERVICE,
-        useValue: options.sensitive,
+        provide: RedisService,
+        useValue: options.redisService,
+      });
+    } else if (options.redisOptions) {
+      providers.push({
+        provide: RedisService,
+        useFactory: () => new RedisService(options.redisOptions as any),
       });
     } else {
-      imports.push(SensitiveModule.register(options.sensitive));
       providers.push({
-        provide: SENSITIVE_SERVICE,
-        useExisting: SensitiveService,
+        provide: RedisService,
+        useFactory: () => {
+          throw new Error('RedisService must be provided either directly or via redisOptions');
+        },
       });
     }
 
-    if (options.redis instanceof RedisService) {
+    if (options.sensitiveService) {
       providers.push({
-        provide: REDIS_SERVICE,
-        useValue: options.redis,
+        provide: SensitiveService,
+        useValue: options.sensitiveService,
+      });
+    } else if (options.sensitiveOptions) {
+      providers.push({
+        provide: SensitiveService,
+        useFactory: () => new SensitiveService(options.sensitiveOptions as any),
       });
     } else {
-      imports.push(
-        RedisModule.register({
-          connection: options.redis,
-        }),
-      );
       providers.push({
-        provide: REDIS_SERVICE,
-        useExisting: RedisService,
+        provide: SensitiveService,
+        useFactory: () => {
+          throw new Error('SensitiveService must be provided either directly or via sensitiveOptions');
+        },
       });
     }
 
     providers.push({
       provide: CacheService,
-      useFactory: (redisService: RedisService, sensitiveService: SensitiveService) => {
+      useFactory: (sensitiveService: SensitiveService, redisService: RedisService) => {
         return new CacheService(sensitiveService, redisService);
       },
-      inject: [REDIS_SERVICE, SENSITIVE_SERVICE],
+      inject: [SensitiveService, RedisService],
     });
 
     return {
       module: CacheModule,
-      global: options.isGlobal || false,
-      imports,
       providers,
       exports: [CacheService],
+      global: options.isGlobal ?? false,
     };
   }
 
   static registerAsync(options: CacheModuleAsyncOptions): DynamicModule {
-    const asyncProviders = this.createAsyncProviders(options);
-    const providers: Provider[] = [...asyncProviders];
-    const imports = [...(options.imports || [])];
-
-    providers.push(
+    const providers: Provider[] = [
+      ...(options.providers || []),
       {
-        provide: REDIS_SERVICE,
-        useFactory: (moduleOptions: CacheModuleOptions) => {
-          if (moduleOptions.redis instanceof RedisService) {
-            return moduleOptions.redis;
+        provide: CACHE_MODULE_OPTIONS,
+        useFactory: options.useFactory || (() => ({})),
+        inject: options.inject || [],
+      },
+      {
+        provide: RedisService,
+        useFactory: (cacheModuleOptions: CacheModuleOptions) => {
+          if (cacheModuleOptions.redisService) {
+            return cacheModuleOptions.redisService;
           }
 
-          imports.push(
-            RedisModule.register({
-              connection: moduleOptions.redis,
-            }),
-          );
+          if (cacheModuleOptions.redisOptions) {
+            return new RedisService(cacheModuleOptions.redisOptions);
+          }
+
+          throw new Error('RedisService must be provided either directly or via redisOptions');
         },
         inject: [CACHE_MODULE_OPTIONS],
       },
       {
-        provide: REDIS_SERVICE,
-        useExisting: RedisService,
-      },
-      {
-        provide: SENSITIVE_SERVICE,
-        useFactory: (moduleOptions: CacheModuleOptions) => {
-          if (moduleOptions.sensitive instanceof SensitiveService) {
-            return moduleOptions.sensitive;
+        provide: SensitiveService,
+        useFactory: (cacheModuleOptions: CacheModuleOptions) => {
+          if (cacheModuleOptions.sensitiveService) {
+            return cacheModuleOptions.sensitiveService;
           }
 
-          imports.push(SensitiveModule.register(moduleOptions.sensitive));
+          if (cacheModuleOptions.sensitiveOptions) {
+            return new SensitiveService(cacheModuleOptions.sensitiveOptions);
+          }
+
+          throw new Error('SensitiveService must be provided either directly or via sensitiveOptions');
         },
         inject: [CACHE_MODULE_OPTIONS],
-      },
-      {
-        provide: SENSITIVE_SERVICE,
-        useExisting: SensitiveService,
       },
       {
         provide: CacheService,
-        useFactory: (redisService: RedisService, sensitiveService: SensitiveService) => {
+        useFactory: (sensitiveService: SensitiveService, redisService: RedisService) => {
           return new CacheService(sensitiveService, redisService);
         },
-        inject: [REDIS_SERVICE, SENSITIVE_SERVICE],
+        inject: [SensitiveService, RedisService],
       },
-    );
+    ];
 
     return {
       module: CacheModule,
-      global: options.isGlobal,
-      imports,
+      imports: options.imports || [],
       providers,
       exports: [CacheService],
+      global: options.isGlobal ?? false,
     };
-  }
-
-  private static createAsyncProviders(options: CacheModuleAsyncOptions): Provider[] {
-    return [
-      {
-        provide: CACHE_MODULE_OPTIONS,
-        useFactory: async (...args: any[]) => {
-          const moduleOptions = await options.useFactory(...args);
-
-          if (moduleOptions.cacheKeyConfig) {
-            CacheKey.configure(moduleOptions.cacheKeyConfig);
-          }
-
-          return moduleOptions;
-        },
-        inject: options.inject || [],
-      },
-    ];
   }
 }

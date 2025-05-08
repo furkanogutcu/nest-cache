@@ -1,18 +1,29 @@
-import { RedisConnectionOptions, RedisService } from '@furkanogutcu/nest-redis';
-import { SensitiveModuleOptions, SensitiveService } from '@furkanogutcu/nest-sensitive';
-import { ModuleMetadata } from '@nestjs/common';
+import { RedisService } from '@furkanogutcu/nest-redis';
+import { SensitiveService } from '@furkanogutcu/nest-sensitive';
+import { Provider } from '@nestjs/common';
 
-import { CacheKeyConfig } from './cache-key-config.interface';
-
-export interface CacheModuleOptions {
-  sensitive: SensitiveModuleOptions | SensitiveService;
-  redis: RedisConnectionOptions | RedisService;
-  isGlobal?: boolean;
-  cacheKeyConfig?: CacheKeyConfig;
+export interface RedisOptions {
+  url: string;
+  [key: string]: any;
 }
 
-export interface CacheModuleAsyncOptions extends Pick<ModuleMetadata, 'imports'> {
+export interface SensitiveOptions {
+  encryptionKey: string;
+  [key: string]: any;
+}
+
+export interface CacheModuleOptions {
+  redisService?: RedisService;
+  sensitiveService?: SensitiveService;
+  redisOptions?: RedisOptions;
+  sensitiveOptions?: SensitiveOptions;
+  isGlobal?: boolean;
+}
+
+export interface CacheModuleAsyncOptions {
+  imports?: any[];
+  useFactory?: (...args: any[]) => Promise<CacheModuleOptions> | CacheModuleOptions;
   inject?: any[];
-  useFactory: (...args: any[]) => Promise<CacheModuleOptions> | CacheModuleOptions;
+  providers?: Provider[];
   isGlobal?: boolean;
 }
