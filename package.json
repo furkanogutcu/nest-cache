@@ -1,6 +1,6 @@
 {
   "name": "@furkanogutcu/nest-cache",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Redis-based caching module for NestJS applications.",
   "author": "Furkan Ogutcu",
   "license": "MIT",
