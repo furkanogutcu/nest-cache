@@ -9,7 +9,7 @@ import { CacheModuleAsyncOptions, CacheModuleOptions } from './interfaces/cache-
 
 @Module({})
 export class CacheModule {
-  static register(options: CacheModuleOptions = {}): DynamicModule {
+  static register(options: CacheModuleOptions): DynamicModule {
     if (options.cacheKeyConfig) {
       CacheKey.configure(options.cacheKeyConfig);
     }
@@ -25,24 +25,24 @@ export class CacheModule {
           let redisService: RedisService;
           let sensitiveService: SensitiveService;
 
-          if (options.redis) {
-            if (options.redis instanceof RedisService) {
-              redisService = options.redis;
-            } else {
-              redisService = new RedisService(options.redis);
-            }
-          } else {
+          if (!options.redis) {
             throw new Error('Redis configuration must be provided');
           }
 
-          if (options.sensitive) {
-            if (options.sensitive instanceof SensitiveService) {
-              sensitiveService = options.sensitive;
-            } else {
-              sensitiveService = new SensitiveService(options.sensitive);
-            }
+          if (options.redis instanceof RedisService) {
+            redisService = options.redis;
           } else {
+            redisService = new RedisService(options.redis);
+          }
+
+          if (!options.sensitive) {
             throw new Error('Sensitive configuration must be provided');
+          }
+
+          if (options.sensitive instanceof SensitiveService) {
+            sensitiveService = options.sensitive;
+          } else {
+            sensitiveService = new SensitiveService(options.sensitive);
           }
 
           return new CacheService(sensitiveService, redisService);
@@ -76,24 +76,24 @@ export class CacheModule {
           let redisService: RedisService;
           let sensitiveService: SensitiveService;
 
-          if (moduleOptions.redis) {
-            if (moduleOptions.redis instanceof RedisService) {
-              redisService = moduleOptions.redis;
-            } else {
-              redisService = new RedisService(moduleOptions.redis);
-            }
-          } else {
+          if (!moduleOptions.redis) {
             throw new Error('Redis configuration must be provided');
           }
 
-          if (moduleOptions.sensitive) {
-            if (moduleOptions.sensitive instanceof SensitiveService) {
-              sensitiveService = moduleOptions.sensitive;
-            } else {
-              sensitiveService = new SensitiveService(moduleOptions.sensitive);
-            }
+          if (moduleOptions.redis instanceof RedisService) {
+            redisService = moduleOptions.redis;
           } else {
+            redisService = new RedisService(moduleOptions.redis);
+          }
+
+          if (!moduleOptions.sensitive) {
             throw new Error('Sensitive configuration must be provided');
+          }
+
+          if (moduleOptions.sensitive instanceof SensitiveService) {
+            sensitiveService = moduleOptions.sensitive;
+          } else {
+            sensitiveService = new SensitiveService(moduleOptions.sensitive);
           }
 
           return new CacheService(sensitiveService, redisService);

@@ -85,7 +85,7 @@ import { CacheModule } from '@furkanogutcu/nest-cache';
           prefix: 'my-app',
           separator: ':',
         },
-        isGlobal: true,
+        isGlobal: true, // Optional: Make the module global
       }),
     }),
   ],
@@ -117,9 +117,9 @@ import { CacheModule } from '@furkanogutcu/nest-cache';
           prefix: 'my-app',
           separator: ':',
         },
-        isGlobal: true,
       }),
       inject: [RedisService, SensitiveService],
+      isGlobal: true, // Optional: Make the module global
     }),
   ],
 })

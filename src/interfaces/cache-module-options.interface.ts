@@ -15,8 +15,8 @@ export interface SensitiveOptions {
 }
 
 export interface CacheModuleOptions {
-  redis?: RedisService | RedisOptions;
-  sensitive?: SensitiveService | SensitiveOptions;
+  redis: RedisService | RedisOptions;
+  sensitive: SensitiveService | SensitiveOptions;
   cacheKeyConfig?: Partial<CacheKeyConfig>;
   isGlobal?: boolean;
 }
