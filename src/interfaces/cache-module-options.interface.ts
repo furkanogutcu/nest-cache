@@ -2,6 +2,8 @@ import { RedisService } from '@furkanogutcu/nest-redis';
 import { SensitiveService } from '@furkanogutcu/nest-sensitive';
 import { Provider } from '@nestjs/common';
 
+import { CacheKeyConfig } from './cache-key-config.interface';
+
 export interface RedisOptions {
   url: string;
   [key: string]: any;
@@ -13,10 +15,9 @@ export interface SensitiveOptions {
 }
 
 export interface CacheModuleOptions {
-  redisService?: RedisService;
-  sensitiveService?: SensitiveService;
-  redisOptions?: RedisOptions;
-  sensitiveOptions?: SensitiveOptions;
+  redis?: RedisService | RedisOptions;
+  sensitive?: SensitiveService | SensitiveOptions;
+  cacheKeyConfig?: Partial<CacheKeyConfig>;
   isGlobal?: boolean;
 }
 
